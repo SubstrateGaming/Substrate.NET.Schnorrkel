@@ -2,15 +2,25 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <Copyright>Copyright 2021 Usetech Professional, Unique Network</Copyright>
     <LangVersion>8.0</LangVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	<Description>Schnorrkel is written in NETStandard2.0 to provide maximum compatibility for Unity3D.</Description>
+    <PackageProjectUrl>https://github.com/dotmog/Schnorrkel</PackageProjectUrl>
+	<PackageLicenseFile>LICENSE</PackageLicenseFile>
+	<RepositoryUrl>https://github.com/dotmog/Schnorrkel</RepositoryUrl>
+	<RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="IndexRange" Version="1.0.0" />
     <PackageReference Include="StrobeNet" Version="0.0.2.4" />
     <PackageReference Include="System.Memory" Version="4.5.4" />
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
