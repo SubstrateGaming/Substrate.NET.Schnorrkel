@@ -14,6 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using Schnorrkel.Keys;
+using Schnorrkel.Merlin;
 using Schnorrkel.Ristretto;
 using Schnorrkel.Scalars;
 using System;
@@ -77,6 +79,44 @@ namespace Schnorrkel
                 key = new Scalar { ScalarBytes = key },
                 nonce = data.AsMemory().Slice(32, 32).ToArray()
             };
+        }
+
+        /// <summary>
+        /// https://github.com/w3f/schnorrkel/blob/master/src/keys.rs#L488
+        /// </summary>
+        /// <returns></returns>
+        internal byte[] ToEd25519Bytes()
+        {
+            byte[] bytes = new byte[64];
+            var res = Scalar.MultiplyScalarBytesByCofactor(key.ScalarBytes);
+
+            Array.Copy(res, 0, bytes, 0, 32);
+            Array.Copy(nonce, 0, bytes, 32, nonce.Length);
+
+            return bytes;
+
+        }
+
+        /// <summary>
+        /// https://github.com/w3f/schnorrkel/blob/master/src/derive.rs#L118
+        /// </summary>
+        /// <param name="chainCode"></param>
+        /// <returns></returns>
+        public (MiniSecret miniSecret, byte[] chainCode) HardDerive(byte[] chainCode)
+        {
+            var transcript = new Transcript("SchnorrRistrettoHDKD");
+
+            transcript.AppendMessage("sign-bytes", string.Empty);
+            transcript.AppendMessage("chain-code", chainCode);
+            transcript.AppendMessage("secret-key", this.key.ScalarBytes);
+
+            var msk = new byte[32];
+            transcript.ChallengeBytes(System.Text.Encoding.UTF8.GetBytes("HDKD-hard"), ref msk);
+
+            var chainCodeFinal = new byte[32];
+            transcript.ChallengeBytes(System.Text.Encoding.UTF8.GetBytes("HDKD-chaincode"), ref chainCodeFinal);
+
+            return (new MiniSecret(msk, ExpandMode.Ed25519), chainCodeFinal);
         }
     }
 }

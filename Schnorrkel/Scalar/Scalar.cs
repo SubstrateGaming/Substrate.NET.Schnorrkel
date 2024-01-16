@@ -160,5 +160,25 @@ namespace Schnorrkel.Scalars
             var sc = UnpackedScalar.FromBytesWide(data);
             return UnpackedScalar.Pack(sc);
         }
+
+        /// <summary>
+        /// https://github.com/w3f/schnorrkel/blob/master/src/scalars.rs#L25
+        /// </summary>
+        /// <param name="scalar"></param>
+        /// <returns></returns>
+        internal static byte[] MultiplyScalarBytesByCofactor(byte[] scalar)
+        {
+            byte high = 0;
+
+            for (int i = 0; i < scalar.Length; i++)
+            {
+                byte r = (byte)(scalar[i] & 0b11100000); // carry bits
+                scalar[i] <<= 3; // multiply by 8
+                scalar[i] += high;
+                high = (byte)(r >> 5);
+            }
+
+            return scalar;
+        }
     }
 }

@@ -14,6 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using System;
+
 namespace Schnorrkel.Keys
 {
     public class KeyPair
@@ -25,6 +27,23 @@ namespace Schnorrkel.Keys
         {
             this.Public = publicKey;
             this.Secret = secretKey;
+        }
+
+        /// <summary>
+        /// https://github.com/w3f/schnorrkel/blob/master/src/keys.rs#L823
+        /// </summary>
+        /// <returns></returns>
+        public byte[] ToHalfEd25519Bytes()
+        {
+            byte[] bytes = new byte[96];
+
+            byte[] secretBytes = Secret.ToEd25519Bytes();
+            Array.Copy(secretBytes, 0, bytes, 0, 64);
+
+            byte[] publicBytes = Public.Key;
+            Array.Copy(publicBytes, 0, bytes, 64, publicBytes.Length);
+
+            return bytes;
         }
     }
 }
