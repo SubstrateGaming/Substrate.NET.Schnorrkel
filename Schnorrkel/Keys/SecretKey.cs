@@ -98,6 +98,14 @@ namespace Schnorrkel
         }
 
         /// <summary>
+        /// https://github.com/w3f/schnorrkel/blob/master/src/keys.rs#L523
+        /// This is exactly the same implementation as FromBytes011, but I prefer to add a new method to keep name consistency
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
+        internal static SecretKey FromEd25519Bytes(byte[] data) => FromBytes011(data);
+
+        /// <summary>
         /// https://github.com/w3f/schnorrkel/blob/master/src/derive.rs#L118
         /// </summary>
         /// <param name="chainCode"></param>

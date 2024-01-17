@@ -109,42 +109,6 @@ namespace Schnorrkel.Keys
             Scalar.DivideScalarBytesByCofactor(ref key);
             secret = Scalar.FromBits(key);
         }
-
-        /// <summary>
-        /// https://github.com/w3f/schnorrkel/blob/master/src/derive.rs#L63 + https://github.com/w3f/schnorrkel/blob/master/src/derive.rs#L181
-        /// </summary>
-        /// <param name="chainCode"></param>
-        /// <returns></returns>
-        public (KeyPair keyPair, byte[] chainCode) SoftDerive(byte[] chainCode)
-        {
-            var transcript = new Transcript("SchnorrRistrettoHDKD");
-            transcript.AppendMessage("sign-bytes", string.Empty);
-
-            var (scalarDerive, ccDerive) = ExpandToPublic().DeriveScalarAndChainCode(transcript, chainCode);
-
-            var combinedBytes = new System.Collections.Generic.List<byte>(nonce.Length + secret.ScalarBytes.Length);
-            combinedBytes.AddRange(nonce);
-            combinedBytes.AddRange(secret.ScalarBytes);
-            var calcNonce = new byte[32];
-            transcript.WitnessBytes(Encoding.UTF8.GetBytes("HDKD-nonce"), ref calcNonce, combinedBytes.ToArray(), new Simple());
-
-            secret.Recalc();
-            var addScalar = new Scalar { ScalarBytes = (secret.ScalarInner + scalarDerive.ScalarInner).ToBytes() };
-            addScalar.Recalc();
-
-            var secretKey = new SecretKey()
-            {
-                key = addScalar,
-                nonce = calcNonce
-            };
-
-            return (new KeyPair(secretKey.ExpandToPublic(), secretKey), ccDerive);
-        }
-
-        public (MiniSecret miniSecret, byte[] chainCode) HardDerive(byte[] chainCode)
-        {
-            return ExpandToSecret().HardDerive(chainCode);
-        }
     }
 
     public enum ExpandMode
