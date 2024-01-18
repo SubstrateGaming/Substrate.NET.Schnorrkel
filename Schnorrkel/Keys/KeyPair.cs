@@ -14,6 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using Schnorrkel.Merlin;
+using Schnorrkel.Scalars;
+using System;
+using System.Text;
+
 namespace Schnorrkel.Keys
 {
     public class KeyPair
@@ -25,6 +30,76 @@ namespace Schnorrkel.Keys
         {
             this.Public = publicKey;
             this.Secret = secretKey;
+        }
+
+        /// <summary>
+        /// https://github.com/w3f/schnorrkel/blob/master/src/keys.rs#L823
+        /// </summary>
+        /// <returns></returns>
+        public byte[] ToHalfEd25519Bytes()
+        {
+            byte[] bytes = new byte[96];
+
+            byte[] secretBytes = Secret.ToEd25519Bytes();
+            Array.Copy(secretBytes, 0, bytes, 0, 64);
+
+            byte[] publicBytes = Public.Key;
+            Array.Copy(publicBytes, 0, bytes, 64, publicBytes.Length);
+
+            return bytes;
+        }
+
+        /// <summary>
+        /// https://github.com/w3f/schnorrkel/blob/master/src/keys.rs#L853
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public static KeyPair FromHalfEd25519Bytes(byte[] data)
+        {
+            if (data.Length != 96)
+                throw new ArgumentException("Invalid KeyPair bytes parameters");
+
+            byte[] secretKey = new byte[64];
+            Array.Copy(data, 0, secretKey, 0, 64);
+
+            var privateKey = SecretKey.FromEd25519Bytes(secretKey);
+
+            var publicKey = new byte[32];
+            Array.Copy(data, 64, publicKey, 0, 32);
+
+            return new KeyPair(new PublicKey(publicKey), privateKey);
+        }
+
+        /// <summary>
+        /// https://github.com/w3f/schnorrkel/blob/master/src/derive.rs#L63 + https://github.com/w3f/schnorrkel/blob/master/src/derive.rs#L181
+        /// </summary>
+        /// <param name="chainCode"></param>
+        /// <returns></returns>
+        public (KeyPair keyPair, byte[] chainCode) SoftDerive(byte[] chainCode)
+        {
+            var transcript = new Transcript("SchnorrRistrettoHDKD");
+            transcript.AppendMessage("sign-bytes", string.Empty);
+
+            var (scalarDerive, ccDerive) = Public.DeriveScalarAndChainCode(transcript, chainCode);
+
+            var combinedBytes = new System.Collections.Generic.List<byte>(Secret.nonce.Length + Secret.key.ScalarBytes.Length);
+            combinedBytes.AddRange(Secret.nonce);
+            combinedBytes.AddRange(Secret.key.ScalarBytes);
+            var calcNonce = new byte[32];
+            transcript.WitnessBytes(Encoding.UTF8.GetBytes("HDKD-nonce"), ref calcNonce, combinedBytes.ToArray(), new Simple());
+
+            Secret.key.Recalc();
+            var addScalar = new Scalar { ScalarBytes = (Secret.key.ScalarInner + scalarDerive.ScalarInner).ToBytes() };
+            addScalar.Recalc();
+
+            var secretKey = new SecretKey()
+            {
+                key = addScalar,
+                nonce = calcNonce
+            };
+
+            return (new KeyPair(secretKey.ExpandToPublic(), secretKey), ccDerive);
         }
     }
 }

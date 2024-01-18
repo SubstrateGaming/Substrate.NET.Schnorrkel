@@ -14,7 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using Schnorrkel.Merlin;
 using Schnorrkel.Ristretto;
+using Schnorrkel.Scalars;
 
 namespace Schnorrkel
 {
@@ -30,6 +32,29 @@ namespace Schnorrkel
         internal EdwardsPoint GetEdwardsPoint()
         {
             return EdwardsPoint.Decompress(Key);
+        }
+
+        /// <summary>
+        /// https://github.com/w3f/schnorrkel/blob/master/src/derive.rs#L89
+        /// </summary>
+        /// <param name="transcript"></param>
+        /// <param name="chainCode"></param>
+        /// <returns></returns>
+        internal (Scalar, byte[]) DeriveScalarAndChainCode(Transcript transcript, byte[] chainCode)
+        {
+            transcript.CommitBytes(System.Text.Encoding.UTF8.GetBytes("chain-code"), chainCode);
+            transcript.CommitBytes(System.Text.Encoding.UTF8.GetBytes("public-key"), Key);
+
+            var scalar64 = new byte[64];
+            transcript.ChallengeBytes(System.Text.Encoding.UTF8.GetBytes("HDKD-scalar"), ref scalar64);
+
+            var scalar52 = UnpackedScalar.FromBytesWide(scalar64);
+            Scalar scalar = UnpackedScalar.Pack(scalar52);
+
+            var chainCodeFinal = new byte[32];
+            transcript.ChallengeBytes(System.Text.Encoding.UTF8.GetBytes("HDKD-chaincode"), ref chainCodeFinal);
+
+            return (scalar, chainCodeFinal);
         }
     }
 }
