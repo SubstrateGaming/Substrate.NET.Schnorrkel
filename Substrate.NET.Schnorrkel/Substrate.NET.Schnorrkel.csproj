@@ -3,7 +3,7 @@
   <PropertyGroup>
 	  <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0</TargetFrameworks>
 	  <Version>1.2.0</Version>
-	  <Company>BloGa Tech AG</Company>
+	  <Company>SubstrateGaming</Company>
 	  <Authors>Cedric Decoster</Authors>
 	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	  <Description>Substrate .NET Schnorrkel is written in NETStandard2.0 to provide maximum compatibility</Description>
