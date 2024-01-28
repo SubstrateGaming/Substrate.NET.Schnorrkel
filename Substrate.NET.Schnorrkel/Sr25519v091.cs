@@ -25,25 +25,12 @@ using System.Text;
 
 namespace Substrate.NET.Schnorrkel
 {
-    /// <summary>
-    /// Schnorrkel implementation for Substrate.
-    /// </summary>
     public class Sr25519v091 : Sr25519Base
     {
-        /// <summary>
-        /// Create a new instance of Sr25519.
-        /// </summary>
-        /// <param name="settings"></param>
         public Sr25519v091(SchnorrkelSettings settings) : base(settings)
         {
         }
 
-        /// <summary>
-        /// Sign a message with a given public and secret key.
-        /// </summary>
-        /// <param name="pair"></param>
-        /// <param name="message"></param>
-        /// <returns></returns>
         public static byte[] SignSimple(KeyPair pair, byte[] message)
         {
             var signingContext = new SigningContext085(Encoding.UTF8.GetBytes("substrate"));
@@ -55,13 +42,6 @@ namespace Substrate.NET.Schnorrkel
             return sig.ToBytes();
         }
 
-        /// <summary>
-        /// Sign a message with a given public and secret key.
-        /// </summary>
-        /// <param name="publicKey"></param>
-        /// <param name="secretKey"></param>
-        /// <param name="message"></param>
-        /// <returns></returns>
         public static byte[] SignSimple(byte[] publicKey, byte[] secretKey, byte[] message)
         {
             var sk = SecretKey.FromBytes085(secretKey);
@@ -75,13 +55,19 @@ namespace Substrate.NET.Schnorrkel
             return sig.ToBytes();
         }
 
-        /// <summary>
-        /// Verify a signature with a given public key and message.
-        /// </summary>
-        /// <param name="signature"></param>
-        /// <param name="publicKey"></param>
-        /// <param name="message"></param>
-        /// <returns></returns>
+        public static byte[] SignEd25519(byte[] publicKey, byte[] secretKey, byte[] message)
+        {
+            var sk = SecretKey.FromBytes011(secretKey);
+            var pk = new PublicKey(publicKey);
+            var signingContext = new SigningContext011(Encoding.UTF8.GetBytes("substrate"));
+            var st = new SigningTranscript(signingContext);
+            signingContext.ts = signingContext.Bytes(message);
+            var rng = new Simple();
+            var sig = Sign(st, sk, pk, rng);
+
+            return sig.ToBytes011();
+        }
+
         public static bool Verify(byte[] signature, PublicKey publicKey, byte[] message)
         {
             var s = new Signature();
@@ -93,13 +79,6 @@ namespace Substrate.NET.Schnorrkel
             return Verify(st, s, publicKey);
         }
 
-        /// <summary>
-        /// Verify a signature with a given public key and message.
-        /// </summary>
-        /// <param name="signature"></param>
-        /// <param name="publicKey"></param>
-        /// <param name="message"></param>
-        /// <returns></returns>
         public static bool Verify(byte[] signature, byte[] publicKey, byte[] message)
         {
             var s = new Signature();
@@ -112,13 +91,18 @@ namespace Substrate.NET.Schnorrkel
             return Verify(st, s, pk);
         }
 
-        /// <summary>
-        /// Verify a signature with a given public key and message.
-        /// </summary>
-        /// <param name="st"></param>
-        /// <param name="sig"></param>
-        /// <param name="publicKey"></param>
-        /// <returns></returns>
+        public static bool VerifyEd25519(byte[] signature, byte[] publicKey, byte[] message)
+        {
+            var s = new Signature();
+            s.FromBytes011(signature);
+            var pk = new PublicKey(publicKey);
+            var signingContext = new SigningContext011(Encoding.UTF8.GetBytes("substrate"));
+            var st = new SigningTranscript(signingContext);
+            signingContext.ts = signingContext.Bytes(message);
+
+            return Verify(st, s, pk);
+        }
+
         internal static bool Verify(SigningTranscript st, Signature sig, PublicKey publicKey)
         {
             st.SetProtocolName(GetStrBytes("Schnorr-sig"));
@@ -134,14 +118,6 @@ namespace Substrate.NET.Schnorrkel
             return new RistrettoPoint(R).Compress().Equals(sig.R);
         }
 
-        /// <summary>
-        /// Sign a message with a given public and secret key.
-        /// </summary>
-        /// <param name="st"></param>
-        /// <param name="secretKey"></param>
-        /// <param name="publicKey"></param>
-        /// <param name="rng"></param>
-        /// <returns></returns>
         internal static Signature Sign(SigningTranscript st, SecretKey secretKey, PublicKey publicKey, RandomGenerator rng)
         {
             st.SetProtocolName(GetStrBytes("Schnorr-sig"));

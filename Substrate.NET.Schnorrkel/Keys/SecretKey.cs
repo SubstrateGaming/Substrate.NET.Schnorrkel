@@ -88,10 +88,14 @@ namespace Substrate.NET.Schnorrkel
         /// https://github.com/w3f/schnorrkel/blob/master/src/keys.rs#L488
         /// </summary>
         /// <returns></returns>
-        internal byte[] ToEd25519Bytes()
+        public byte[] ToEd25519Bytes()
         {
             byte[] bytes = new byte[64];
-            var res = Scalar.MultiplyScalarBytesByCofactor(key.ScalarBytes);
+
+            byte[] copy = new byte[key.ScalarBytes.Length];
+            Array.Copy(key.ScalarBytes, copy, key.ScalarBytes.Length);
+
+            var res = Scalar.MultiplyScalarBytesByCofactor(copy);
 
             Array.Copy(res, 0, bytes, 0, 32);
             Array.Copy(nonce, 0, bytes, 32, nonce.Length);

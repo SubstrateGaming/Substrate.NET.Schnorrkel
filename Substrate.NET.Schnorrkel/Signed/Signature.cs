@@ -22,6 +22,9 @@ using System;
 
 namespace Substrate.NET.Schnorrkel.Signed
 {
+    /// <summary>
+    /// Schnorrkel signature
+    /// </summary>
     public struct Signature
     {
         public CompressedRistretto R { get; set; }
@@ -49,17 +52,20 @@ namespace Substrate.NET.Schnorrkel.Signed
 
         public void FromBytes(byte[] signatureBytes)
         {
-            if ((signatureBytes[63] & 128) == 0)
+            byte[] clonedSignature = new byte[signatureBytes.Length];
+            Array.Copy(signatureBytes, clonedSignature, signatureBytes.Length);
+
+            if ((clonedSignature[63] & 128) == 0)
             {
                 throw new Exception("Signature bytes not marked as a schnorrkel signature");
             }
 
             // remove schnorrkel signature mark
-            signatureBytes[63] &= 127;
-            var r = new CompressedRistretto(signatureBytes.AsMemory(0, 32).ToArray());
+            clonedSignature[63] &= 127;
+            var r = new CompressedRistretto(clonedSignature.AsMemory(0, 32).ToArray());
             var s = new Scalar();
             s.ScalarBytes = new byte[32];
-            signatureBytes.AsMemory(32, 32).CopyTo(s.ScalarBytes);
+            clonedSignature.AsMemory(32, 32).CopyTo(s.ScalarBytes);
             s.Recalc();
 
             R = r;

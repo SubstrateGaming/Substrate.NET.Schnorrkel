@@ -1,25 +1,8 @@
-/*
- * Copyright (C) 2021 DOT Mog
- * Copyright (C) 2024 SubstrateGaming
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
+using System;
 using NUnit.Framework;
 using SubstrateNetApi;
-using System;
 
-namespace Substrate.NET.Schnorrkel.Test
+namespace Schnorrkel
 {
     public class SchnorrkelTests
     {
@@ -48,6 +31,7 @@ namespace Substrate.NET.Schnorrkel.Test
             Assert.AreEqual("0x15C2EA7AE2F5237E2FCB134CFAB0D2251166430A4146A920C5B6E5D88693AE0B", Utils.Bytes2HexString(secretKey.key.GetBytes()));
             Assert.AreEqual("0xEFC9C8DD67B7C59B201BC164163A8978D40010C22743DB142A47F2E064480D4B", Utils.Bytes2HexString(secretKey.nonce));
         }
+
 
         [Test]
         public void ShouldGenerateKeypair85Test()
