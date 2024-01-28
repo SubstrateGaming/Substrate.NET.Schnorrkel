@@ -1,6 +1,10 @@
-# Schnorrkel (NETStandard2.0)
-[![Build status](https://ci.appveyor.com/api/projects/status/iloh1v3ycii93n0c?svg=true)](https://ci.appveyor.com/project/darkfriend77/schnorrkel)
-[![nuget](https://img.shields.io/nuget/v/Schnorrkel)](https://ci.appveyor.com/project/darkfriend77/schnorrkel/build/artifacts)
+# Substrate.NET.Schnorrkel (NETStandard2.0)
+![Build](https://github.com/SubstrateGaming/Substrate.NET.Schnorrkel/actions/workflows/build.yml/badge.svg)
+[![Nuget](https://img.shields.io/nuget/v/Substrate.NET.Schnorrkel)](https://www.nuget.org/packages/Substrate.NET.Schnorrkel/)
+[![GitHub issues](https://img.shields.io/github/issues/SubstrateGaming/Substrate.NET.Schnorrkel.svg)](https://github.com/SubstrateGaming/Substrate.NET.Schnorrkel/issues)
+[![license](https://img.shields.io/github/license/SubstrateGaming/Substrate.NET.Schnorrkel)](https://github.com/SubstrateGaming/Substrate.NET.Schnorrkel/blob/origin/LICENSE)
+[![contributors](https://img.shields.io/github/contributors/SubstrateGaming/Substrate.NET.Schnorrkel)](https://github.com/SubstrateGaming/Substrate.NET.Schnorrkel/graphs/contributors) 
+[![Nuget](https://img.shields.io/nuget/dt/Substrate.NET.Schnorrkel)](https://www.nuget.org/packages/Substrate.NET.Schnorrkel/) 
 
 Schnorrkel is written in [NETStandard2.0](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) to provide maximum compatibility for [Unity3D](https://docs.unity3d.com/2020.2/Documentation/Manual/dotnetProfileSupport.html).
 
