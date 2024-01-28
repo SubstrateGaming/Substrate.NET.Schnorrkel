@@ -21,21 +21,29 @@ using System;
 
 namespace Substrate.NET.Schnorrkel.Ristretto
 {
+    /// <summary>
+    /// A Ristretto point, in compressed wire format.
+    ///
+    /// The Ristretto encoding is canonical, so two points are equal if and only if their encodings are equal.
+    /// </summary>
     public class CompressedRistretto : IEquatable<CompressedRistretto>
     {
+        /// <summary>
+        /// Compressed Ristretto internal bytes
+        /// </summary>
         public byte[] _compressedRistrettoBytes { get; set; }
 
+        //Instanciate a new Compressed Ristretto
         public CompressedRistretto(byte[] data)
         {
             _compressedRistrettoBytes = data;
         }
 
+        /// <summary>
+        /// Return the bytes of this `CompressedRistretto`.
+        /// </summary>
+        /// <returns></returns>
         public byte[] ToBytes()
-        {
-            return _compressedRistrettoBytes;
-        }
-
-        public byte[] GetBytes()
         {
             return _compressedRistrettoBytes;
         }

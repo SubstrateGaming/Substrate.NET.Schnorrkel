@@ -21,51 +21,107 @@ namespace Substrate.NET.Schnorrkel.Scalars
     using System;
     using System.Numerics;
 
+    /// <summary>
+    /// A `FieldElement51` represents an element of the field
+    /// \\( \mathbb Z / (2\^{255} - 19)\\).
+    ///
+    /// In the 64-bit implementation, a `FieldElement` is represented in
+    /// radix \\(2\^{51}\\) as five `u64`s; the coefficients are allowed to
+    /// grow up to \\(2\^{54}\\) between reductions modulo \\(p\\).
+    /// </summary>
     public class FieldElement51
     {
         public ulong[] _data = { 0, 0, 0, 0, 0 };
 
+        /// <summary>
+        /// Instanciate a new empty FieldElement51
+        /// </summary>
         public FieldElement51()
         {
         }
 
+        /// <summary>
+        /// Instanciate a new FieldElement51 with data params
+        /// </summary>
+        /// <param name="data"></param>
         public FieldElement51(ulong[] data)
         {
             _data = data;
         }
 
+        /// <summary>
+        /// Instanciate a new FieldElement51 with one by one data
+        /// </summary>
+        /// <param name="p1"></param>
+        /// <param name="p2"></param>
+        /// <param name="p3"></param>
+        /// <param name="p4"></param>
+        /// <param name="p5"></param>
         public FieldElement51(ulong p1, ulong p2, ulong p3, ulong p4, ulong p5)
         {
             _data = new ulong[] { p1, p2, p3, p4, p5 };
         }
 
+        /// <summary>
+        /// Multiplication for FieldElement51
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public static FieldElement51 operator *(FieldElement51 self, FieldElement51 other)
         {
             return self.Mul(other);
         }
 
+        /// <summary>
+        /// Addition for FieldElement51
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public static FieldElement51 operator +(FieldElement51 self, FieldElement51 other)
         {
             return self.Add(other);
         }
 
+        /// <summary>
+        /// Substraction for FieldElement51
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public static FieldElement51 operator -(FieldElement51 self, FieldElement51 other)
         {
             return self.Sub(other);
         }
 
+        /// <summary>
+        /// Return an element by it index
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ulong this[int index]
         {
             get => _data[index];
             set => _data[index] = value;
         }
 
+        /// <summary>
+        /// Try to convert a BigInteger to U64 (ulong in C#)
+        /// </summary>
+        /// <param name="bi"></param>
+        /// <returns></returns>
         public static ulong AsU64(BigInteger bi)
         {
             var ba = bi.ToByteArray();
             return ba.Length >= 8 ? BitConverter.ToUInt64(ba.AsSpan(0, 8).ToArray(), 0) : (ulong)(long)bi;
         }
 
+        /// <summary>
+        /// Load a `FieldElement51` from the low 255 bits of a 256-bit input.
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
         public static FieldElement51 FromBytes(byte[] bytes)
         {
             var load8 = new Func<byte[], ulong>((input) =>
@@ -98,11 +154,20 @@ namespace Substrate.NET.Schnorrkel.Scalars
                 });
         }
 
+        /// <summary>
+        /// Clone a FieldElement51 instance
+        /// </summary>
+        /// <returns></returns>
         public FieldElement51 Clone()
         {
             return new FieldElement51(_data[0], _data[1], _data[2], _data[3], _data[4]);
         }
 
+        /// <summary>
+        /// Compare if the bytes of two FieldElement51 are equal
+        /// </summary>
+        /// <param name="a"></param>
+        /// <returns></returns>
         public bool CtEq(FieldElement51 a)
         {
             var b1 = ToBytes();
@@ -122,6 +187,10 @@ namespace Substrate.NET.Schnorrkel.Scalars
             return true;
         }
 
+        /// <summary>
+        /// Invert the sign of this field element
+        /// </summary>
+        /// <returns></returns>
         public FieldElement51 Negate()
         {
             return Reduce(new ulong[] {
@@ -133,6 +202,12 @@ namespace Substrate.NET.Schnorrkel.Scalars
             });
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="u"></param>
+        /// <param name="v"></param>
+        /// <returns></returns>
         public static (bool, FieldElement51) SqrtRatioI(FieldElement51 u, FieldElement51 v)
         {
             var pow22501 = new Func<FieldElement51, (FieldElement51, FieldElement51)>(fe =>
@@ -235,12 +310,20 @@ namespace Substrate.NET.Schnorrkel.Scalars
             return (was_nonzero_square, r);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="choice"></param>
         public void ConditionalNegate(bool choice)
         {
             var nself = Negate();
             ConditionalAssign(nself, choice);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public bool IsNegative()
         {
             var dt = BitConverter.GetBytes(_data[0]);
@@ -248,6 +331,11 @@ namespace Substrate.NET.Schnorrkel.Scalars
             return dti > 0;
         }
 
+        /// <summary>
+        /// Conditional assign based on `choice`
+        /// </summary>
+        /// <param name="other"></param>
+        /// <param name="choice"></param>
         public void ConditionalAssign(FieldElement51 other, bool choice)
         {
             var ConditionalAssign = new Func<ulong, ulong, bool, ulong>((original, candidate, condition) =>
@@ -262,6 +350,11 @@ namespace Substrate.NET.Schnorrkel.Scalars
             _data[4] = ConditionalAssign(_data[4], other._data[4], choice);
         }
 
+        /// <summary>
+        /// Given `k > 0`, return `self^(2^k)`.
+        /// </summary>
+        /// <param name="k"></param>
+        /// <returns></returns>
         public FieldElement51 Pow2k(int k)
         {
             /// Multiply two 64-bit integers with 128 bits of output.
@@ -364,16 +457,29 @@ namespace Substrate.NET.Schnorrkel.Scalars
             return new FieldElement51(a);// { _data = a };
         }
 
+        /// <summary>
+        /// Construct one.
+        /// </summary>
+        /// <returns></returns>
         public static FieldElement51 One()
         {
             return new FieldElement51 { _data = new ulong[] { 1, 0, 0, 0, 0 } };
         }
 
+        /// <summary>
+        /// Construct zero.
+        /// </summary>
+        /// <returns></returns>
         public static FieldElement51 Zero()
         {
             return new FieldElement51 { _data = new ulong[] { 0, 0, 0, 0, 0 } };
         }
 
+        /// <summary>
+        /// Multiplication for FieldElement51
+        /// </summary>
+        /// <param name="second"></param>
+        /// <returns></returns>
         public FieldElement51 Mul(FieldElement51 second)
         {
             var m = new Func<BigInteger, BigInteger, BigInteger>((x, y) => { return x * y; });
@@ -454,6 +560,11 @@ namespace Substrate.NET.Schnorrkel.Scalars
             return new FieldElement51 { _data = output };
         }
 
+        /// <summary>
+        /// Given 64-bit input limbs, reduce to enforce the bound 2^(51 + epsilon).
+        /// </summary>
+        /// <param name="limbs"></param>
+        /// <returns></returns>
         public FieldElement51 Reduce(ulong[] limbs)
         {
             const ulong LOW_51_BIT_MASK = ((ulong)1 << 51) - 1;
@@ -490,6 +601,11 @@ namespace Substrate.NET.Schnorrkel.Scalars
             return new FieldElement51(limbs);// { _data = limbs };
         }
 
+        /// <summary>
+        /// Addition for FieldElement51
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
         public FieldElement51 Add(FieldElement51 x)
         {
             var f = new FieldElement51();
@@ -500,6 +616,11 @@ namespace Substrate.NET.Schnorrkel.Scalars
             return f;
         }
 
+        /// <summary>
+        /// Substraction for FieldElement51
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
         public FieldElement51 Sub(FieldElement51 x)
         {
             // To avoid underflow, first add a multiple of p.
@@ -521,11 +642,19 @@ namespace Substrate.NET.Schnorrkel.Scalars
             });
         }
 
+        /// <summary>
+        /// Returns the square of this field element.
+        /// </summary>
+        /// <returns></returns>
         public FieldElement51 Square()
         {
             return Pow2k(1);
         }
 
+        /// <summary>
+        /// Returns 2 times the square of this field element.
+        /// </summary>
+        /// <returns></returns>
         public FieldElement51 Square2()
         {
             var square = Pow2k(1);
@@ -537,6 +666,11 @@ namespace Substrate.NET.Schnorrkel.Scalars
             return square;
         }
 
+        /// <summary>
+        /// Logical Xor operator
+        /// </summary>
+        /// <param name="a"></param>
+        /// <returns></returns>
         public FieldElement51 BitXor(FieldElement51 a)
         {
             return new FieldElement51
@@ -551,6 +685,11 @@ namespace Substrate.NET.Schnorrkel.Scalars
             };
         }
 
+        /// <summary>
+        /// Logical And operator
+        /// </summary>
+        /// <param name="a"></param>
+        /// <returns></returns>
         public FieldElement51 BitAnd(uint a)
         {
             return new FieldElement51

@@ -21,6 +21,9 @@ using System;
 
 namespace Substrate.NET.Schnorrkel.Ristretto
 {
+    /// <summary>
+    /// An `EdwardsPoint` represents a point on the Edwards form of Curve25519.
+    /// </summary>
     public class EdwardsPoint
     {
         public FieldElement51 X, Y, Z, T;
@@ -61,6 +64,11 @@ namespace Substrate.NET.Schnorrkel.Ristretto
             };
         }
 
+        /// <summary>
+        /// Attempt to decompress to an `EdwardsPoint`.
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
         internal static EdwardsPoint Decompress(byte[] bytes)
         {
             var invsqrt =

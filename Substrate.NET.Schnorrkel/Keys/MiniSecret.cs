@@ -26,11 +26,26 @@ using System.Text;
 
 namespace Substrate.NET.Schnorrkel.Keys
 {
+    /// <summary>
+    /// An EdDSA-like "secret" key seed.
+    ///
+    /// These are seeds from which we produce a real `SecretKey`, which
+    /// EdDSA itself calls an extended secret key by hashing.  We require
+    /// homomorphic properties unavailable from these seeds, so we renamed
+    /// these and reserve `SecretKey` for what EdDSA calls an extended
+    /// secret key.
+    /// </summary>
     public class MiniSecret
     {
         private Scalar secret;
         private byte[] nonce;
 
+        /// <summary>
+        /// Instanciate a new MiniSecret
+        /// </summary>
+        /// <param name="miniKey"></param>
+        /// <param name="expandMode"></param>
+        /// <exception cref="InvalidEnumArgumentException"></exception>
         public MiniSecret(byte[] miniKey, ExpandMode expandMode)
         {
             switch (expandMode)
@@ -52,6 +67,10 @@ namespace Substrate.NET.Schnorrkel.Keys
             }
         }
 
+        /// <summary>
+        /// Derive the `Keypair` corresponding to this `MiniSecret`.
+        /// </summary>
+        /// <returns></returns>
         public KeyPair GetPair()
         {
             return new KeyPair(ExpandToPublic(),
@@ -62,6 +81,10 @@ namespace Substrate.NET.Schnorrkel.Keys
                 });
         }
 
+        /// <summary>
+        /// Create a new SecretKey from this MiniSecret
+        /// </summary>
+        /// <returns></returns>
         public SecretKey ExpandToSecret()
         {
             return new SecretKey
@@ -71,6 +94,10 @@ namespace Substrate.NET.Schnorrkel.Keys
             };
         }
 
+        /// <summary>
+        /// Derive the `PublicKey` corresponding to this `MiniSecret`.
+        /// </summary>
+        /// <returns></returns>
         public PublicKey ExpandToPublic()
         {
             var tbl = new RistrettoBasepointTable();
@@ -79,6 +106,14 @@ namespace Substrate.NET.Schnorrkel.Keys
             return new PublicKey(R.ToBytes());
         }
 
+        /// <summary>
+        /// Expand this `MiniSecret` into a `SecretKey`
+        ///
+        /// We preoduce a secret keys using merlin and more uniformly
+        /// with this method, which reduces binary size and benefits
+        /// some future protocols.
+        /// </summary>
+        /// <param name="miniKey"></param>
         private void ExpandUniform(byte[] miniKey)
         {
             Transcript ts = new Transcript("ExpandSecretKeys");
@@ -93,6 +128,20 @@ namespace Substrate.NET.Schnorrkel.Keys
             ts.ChallengeBytes(Encoding.UTF8.GetBytes("no"), ref nonce);
         }
 
+        /// <summary>
+        /// Expand this `MiniSecret` into a `SecretKey` using
+        /// ed25519-style bit clamping.
+        ///
+        /// At present, there is no exposed mapping from Ristretto
+        /// to the underlying Edwards curve because Ristretto invovles
+        /// an inverse square root, and thus two such mappings exist.
+        /// Ristretto could be made usable with Ed25519 keys by choosing
+        /// one mapping as standard, but doing so makes the standard more
+        /// complex, and possibly harder to implement.  If anyone does
+        /// standardize the mapping to the curve then this method permits
+        /// compatable schnorrkel and ed25519 keys.
+        /// </summary>
+        /// <param name="miniKey"></param>
         private void ExpandEd25519(byte[] miniKey)
         {
             SHA512 shaM = new SHA512Managed();
@@ -113,8 +162,51 @@ namespace Substrate.NET.Schnorrkel.Keys
         }
     }
 
+    /// <summary>
+    /// Methods for expanding a `MiniSecretKey` into a `SecretKey`.
+    ///
+    /// Our `SecretKey`s consist of a scalar and nonce seed, both 32 bytes,
+    /// what EdDSA/Ed25519 calls an extended secret key.  We normally create 
+    /// `SecretKey`s by expanding a `MiniSecretKey`, what Esd25519 calls
+    /// a `SecretKey`.  We provide two such methods, our suggested approach
+    /// produces uniformly distribted secret key scalars, but another
+    /// approach retains the bit clamping form Ed25519.
+    /// </summary>
     public enum ExpandMode
     {
-        Uniform, Ed25519
+        /// <summary>
+        /// Expand the `MiniSecretKey` into a uniformly distributed
+        /// `SecretKey`. 
+        ///
+        /// We preoduce the `SecretKey` using merlin and far more uniform
+        /// sampling, which might benefits some future protocols, and
+        /// might reduce binary size if used throughout.  
+        ///
+        /// We slightly prefer this method, but some existing code uses
+        /// `Ed25519` mode, so users cannot necessarily use this mode
+        /// if they require compatability with existing systems.
+        /// </summary>
+        Uniform,
+
+        /// <summary>
+        /// Expand this `MiniSecretKey` into a `SecretKey` using
+        /// ed25519-style bit clamping.
+        ///
+        /// Ristretto points are represented by Ed25519 points internally
+        /// so concievably some future standard might expose a mapping
+        /// from Ristretto to Ed25519, which makes this mode useful.
+        /// At present, there is no such exposed mapping however because
+        /// two such mappings actually exist, depending upon the branch of
+        /// the inverse square root chosen by a Ristretto implementation.
+        /// There is however a concern that such a mapping would remain
+        /// a second class citizen, meaning implementations differ and
+        /// create incompatability.
+        ///
+        /// We weakly recommend against emoloying this method.  We include
+        /// it primarily because early Ristretto documentation touted the 
+        /// relationship with Ed25519, which led to some deployments adopting
+        /// this expansion method.
+        /// </summary>
+        Ed25519
     }
 }

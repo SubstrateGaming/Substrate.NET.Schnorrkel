@@ -20,12 +20,29 @@ using Substrate.NET.Schnorrkel.Scalars;
 
 namespace Substrate.NET.Schnorrkel.Ristretto
 {
+    /// <summary>
+    /// A pre-computed point in the affine model for the curve, represented as \\((y+x, y-x, 2dxy)\\) in "Niels coordinates".
+    /// </summary>
     public class AffineNielsPoint
     {
+        /// <summary>
+        /// Y + X field element equation
+        /// </summary>
         public FieldElement51 Y_plus_X { get; set; }
+
+        /// <summary>
+        /// Y - X field element equation
+        /// </summary>
         public FieldElement51 Y_minus_X { get; set; }
+
+        /// <summary>
+        /// XY2d field element equation
+        /// </summary>
         public FieldElement51 XY2d { get; set; }
 
+        /// <summary>
+        /// Instanciate a new AffineNielsPoint
+        /// </summary>
         public AffineNielsPoint()
         {
             Y_plus_X = FieldElement51.One();
@@ -33,6 +50,11 @@ namespace Substrate.NET.Schnorrkel.Ristretto
             XY2d = FieldElement51.Zero();
         }
 
+        /// <summary>
+        /// Conditional assign based on `choice`
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="choice"></param>
         public void ConditionalAssign(AffineNielsPoint a, bool choice)
         {
             Y_plus_X.ConditionalAssign(a.Y_plus_X, choice);
