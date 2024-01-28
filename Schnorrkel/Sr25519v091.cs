@@ -53,6 +53,19 @@ namespace Schnorrkel
             return sig.ToBytes();
         }
 
+        public static byte[] SignEd25519(byte[] publicKey, byte[] secretKey, byte[] message)
+        {
+            var sk = SecretKey.FromBytes011(secretKey);
+            var pk = new PublicKey(publicKey);
+            var signingContext = new SigningContext011(Encoding.UTF8.GetBytes("substrate"));
+            var st = new SigningTranscript(signingContext);
+            signingContext.ts = signingContext.Bytes(message);
+            var rng = new Simple();
+            var sig = Sign(st, sk, pk, rng);
+
+            return sig.ToBytes011();
+        }
+
         public static bool Verify(byte[] signature, PublicKey publicKey, byte[] message)
         {
             var s = new Signature();
@@ -75,6 +88,19 @@ namespace Schnorrkel
 
             return Verify(st, s, pk);
         }
+
+        public static bool VerifyEd25519(byte[] signature, byte[] publicKey, byte[] message)
+        {
+            var s = new Signature();
+            s.FromBytes011(signature);
+            var pk = new PublicKey(publicKey);
+            var signingContext = new SigningContext011(Encoding.UTF8.GetBytes("substrate"));
+            var st = new SigningTranscript(signingContext);
+            signingContext.ts = signingContext.Bytes(message);
+
+            return Verify(st, s, pk);
+        }
+
         internal static bool Verify(SigningTranscript st, Signature sig, PublicKey publicKey)
         {
             st.SetProtocolName(GetStrBytes("Schnorr-sig"));
