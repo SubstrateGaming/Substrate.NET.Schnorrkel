@@ -17,6 +17,7 @@
  */
 
 using StrobeNet;
+using Substrate.NET.Schnorrkel.Exceptions;
 using System;
 using System.IO;
 using System.Linq;
@@ -152,7 +153,7 @@ namespace Substrate.NET.Schnorrkel.Merlin
             var error = _obj.Operate(true, StrobeNet.Enums.Operation.Ad, data, 0, more);
             if (error != null)
             {
-                throw new ApplicationException($"{error}");
+                throw new TranscriptException($"{error}");
             }
         }
 
@@ -161,7 +162,7 @@ namespace Substrate.NET.Schnorrkel.Merlin
             var error = _obj.Operate(false, StrobeNet.Enums.Operation.Ad, data, 0, more);
             if (error != null)
             {
-                throw new ApplicationException($"{error}");
+                throw new TranscriptException($"{error}");
             }
         }
 
@@ -170,7 +171,7 @@ namespace Substrate.NET.Schnorrkel.Merlin
             var result = _obj.Operate(false, StrobeNet.Enums.Operation.Prf, null, expectedOutput, more);
             if (result == null)
             {
-                throw new ApplicationException($"{result}");
+                throw new TranscriptException($"{result}");
             }
 
             return result;
@@ -181,7 +182,7 @@ namespace Substrate.NET.Schnorrkel.Merlin
             var error = _obj.Operate(false, StrobeNet.Enums.Operation.Key, data, 0, more);
             if (error != null)
             {
-                throw new Exception($"{error}");
+                throw new TranscriptException($"{error}");
             }
         }
 

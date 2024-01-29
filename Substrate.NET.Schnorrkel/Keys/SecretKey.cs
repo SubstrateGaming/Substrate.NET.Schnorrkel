@@ -106,7 +106,7 @@ namespace Substrate.NET.Schnorrkel
         public static SecretKey FromBytes011(byte[] data)
         {
             if (data.Length != Consts.SIGNATURE_LENGTH)
-                throw new Exception("SecretKey - SignatureError::BytesLengthError");
+                throw new ArgumentException("SecretKey - SignatureError::BytesLengthError");
 
             // TODO:  We should consider making sure the scalar is valid,
             // maybe by zering the high bit, orp referably by checking < l.
