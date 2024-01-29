@@ -39,6 +39,10 @@ namespace Substrate.NET.Schnorrkel
         /// </summary>
         public byte[] Key { get; }
 
+        /// <summary>
+        /// Create a new public key from byte array
+        /// </summary>
+        /// <param name="keyBytes"></param>
         public PublicKey(byte[] keyBytes)
         {
             Key = keyBytes;
