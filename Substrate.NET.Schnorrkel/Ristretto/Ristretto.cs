@@ -33,7 +33,10 @@ namespace Substrate.NET.Schnorrkel.Ristretto
         /// </summary>
         public byte[] _compressedRistrettoBytes { get; set; }
 
-        //Instanciate a new Compressed Ristretto
+        /// <summary>
+        /// Instanciate a new Compressed Ristretto
+        /// </summary>
+        /// <param name="data"></param>
         public CompressedRistretto(byte[] data)
         {
             _compressedRistrettoBytes = data;
@@ -48,11 +51,16 @@ namespace Substrate.NET.Schnorrkel.Ristretto
             return _compressedRistrettoBytes;
         }
 
+        /// <summary>
+        /// Compare two CompressedRistretto instance
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public bool Equals(CompressedRistretto other)
         {
             for (var i = 0; i < 32; i++)
             {
-                if (!(_compressedRistrettoBytes[i] == other._compressedRistrettoBytes[i]))
+                if (_compressedRistrettoBytes[i] != other._compressedRistrettoBytes[i])
                 {
                     return false;
                 }
@@ -95,7 +103,7 @@ namespace Substrate.NET.Schnorrkel.Ristretto
             var bNaf = b.NonAdjacentForm(8);
             int i = 0;
 
-            /// Find starting index
+            // Find starting index
             for (var ind = 255; ind >= 0; ind--)
             {
                 i = ind;

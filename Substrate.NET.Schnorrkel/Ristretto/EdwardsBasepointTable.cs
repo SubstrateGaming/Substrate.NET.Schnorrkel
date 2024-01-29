@@ -20,10 +20,31 @@ using Substrate.NET.Schnorrkel.Scalars;
 
 namespace Substrate.NET.Schnorrkel.Ristretto
 {
+    /// <summary>
+    /// A precomputed table of multiples of a basepoint, for accelerating
+    /// fixed-base scalar multiplication.  One table, for the Ed25519
+    /// basepoint, is provided in the `constants` module.
+    ///
+    /// The basepoint tables are reasonably large (30KB), so they should
+    /// probably be boxed.
+    /// </summary>
     public class EdwardsBasepointTable
     {
+        /// <summary>
+        /// Associated EdwardsPoints array
+        /// </summary>
         public LookupTable[] lt;
 
+        /// <summary>
+        /// The computation uses Pippeneger's algorithm, as described on
+        /// page 13 of the Ed25519 paper.  Write the scalar \\(a\\) in radix \\(16\\) with
+        /// coefficients in \\([-8,8)\\)
+        ///
+        /// The radix-\\(16\\) representation requires that the scalar is bounded
+        /// by \\(2\^{255}\\), which is always the case.
+        /// </summary>
+        /// <param name="sclr"></param>
+        /// <returns></returns>
         public EdwardsPoint Mul(Scalar sclr)
         {
             var a = sclr.ToRadix16();
@@ -54,14 +75,42 @@ namespace Substrate.NET.Schnorrkel.Ristretto
             return P;
         }
 
+        /// <summary>
+        /// A lookup table of precomputed multiples of a point \\(P\\), used to
+        /// compute \\( xP \\) for \\( -8 \leq x \leq 8 \\).
+        ///
+        /// The computation of \\( xP \\) is done in constant time by the `select` function.
+        ///
+        /// Since `LookupTable` does not implement `Index`, it's more difficult
+        /// to accidentally use the table directly.  Unfortunately the table is
+        /// only `pub(crate)` so that we can write hardcoded constants, so it's
+        /// still technically possible.  It would be nice to prevent direct
+        /// access to the table.
+        ///
+        /// XXX make this generic with respect to table size
+        /// </summary>
         public class LookupTable
         {
+            /// <summary>
+            /// An EdwardsPoint
+            /// </summary>
             private EdwardsPoint _ep;
+
+            /// <summary>
+            /// Associated AffineNielsPoint points
+            /// </summary>
             public AffineNielsPoint[] affineNielsPoints { get; set; }
 
+            /// <summary>
+            /// Create a new instance of LookupTable
+            /// </summary>
             public LookupTable()
             { }
 
+            /// <summary>
+            /// Create a new instance of LookupTable from an EdwardsPoint
+            /// </summary>
+            /// <param name="ep"></param>
             public LookupTable(EdwardsPoint ep)
             {
                 _ep = ep;
@@ -73,6 +122,11 @@ namespace Substrate.NET.Schnorrkel.Ristretto
                 }
             }
 
+            /// <summary>
+            /// Given \\(-8 \leq x \leq 8\\), return \\(xP\\) in constant time.
+            /// </summary>
+            /// <param name="x"></param>
+            /// <returns></returns>
             public AffineNielsPoint Select(sbyte x)
             {
                 // Compute xabs = |x|
@@ -95,6 +149,11 @@ namespace Substrate.NET.Schnorrkel.Ristretto
                 return t;
             }
 
+            /// <summary>
+            /// Create a LookupTable from an EdwardsPoint
+            /// </summary>
+            /// <param name="ep"></param>
+            /// <returns></returns>
             public static LookupTable From(EdwardsPoint ep)
             {
                 return new LookupTable(ep);

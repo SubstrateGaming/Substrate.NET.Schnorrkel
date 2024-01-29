@@ -24,6 +24,38 @@ using System.Text;
 
 namespace Substrate.NET.Schnorrkel.Merlin
 {
+    /// A transcript of a public-coin argument.
+    ///
+    /// The prover's messages are added to the transcript using
+    /// [`append_message`](Transcript::append_message), and the verifier's
+    /// challenges can be computed using
+    /// [`challenge_bytes`](Transcript::challenge_bytes).
+    ///
+    /// # Creating and using a Merlin transcript
+    ///
+    /// To create a Merlin transcript, use [`Transcript::new()`].  This
+    /// function takes a domain separation label which should be unique to
+    /// the application.
+    ///
+    /// To use the transcript with a Merlin-based proof implementation,
+    /// the prover's side creates a Merlin transcript with an
+    /// application-specific domain separation label, and passes a 
+    /// reference to the transcript to the proving function(s).
+    ///
+    /// To verify the resulting proof, the verifier creates their own
+    /// Merlin transcript using the same domain separation label, then
+    /// passes a reference to the verifier's transcript to the
+    /// verification function.
+    ///
+    /// # Implementing proofs using Merlin
+    ///
+    /// For information on the design of Merlin and how to use it to
+    /// implement a proof system, see the documentation at
+    /// [merlin.cool](https://merlin.cool), particularly the [Using
+    /// Merlin](https://merlin.cool/use/index.html) section. <summary>
+    /// A transcript of a public-coin argument.
+    /// 
+    /// </summary>
     internal class Transcript
     {
         public Strobe _obj { get; private set; }
@@ -34,11 +66,20 @@ namespace Substrate.NET.Schnorrkel.Merlin
             return _obj?.DebugPrintState();
         }
 
+        /// <summary>
+        /// Instanciate a new Transcript
+        /// </summary>
+        /// <param name="obj"></param>
         private Transcript(Strobe obj)
         {
             _obj = obj.Clone() as Strobe;
         }
 
+        /// <summary>
+        /// Convert hexa string to a byte array
+        /// </summary>
+        /// <param name="hex"></param>
+        /// <returns></returns>
         public static byte[] StringToByteArray(string hex)
         {
             return Enumerable.Range(0, hex.Length)
@@ -47,23 +88,40 @@ namespace Substrate.NET.Schnorrkel.Merlin
                              .ToArray();
         }
 
+        /// <summary>
+        /// Initialize a new transcript with the supplied `label`, which is used as a domain separator.
+        /// </summary>
+        /// <param name="label"></param>
         public Transcript(string label)
         {
             _obj = new Strobe(MERLIN_PROTOCOL_LABEL, 128);
             AppendMessage(Encoding.UTF8.GetBytes("dom-sep"), Encoding.UTF8.GetBytes(label));
         }
 
+        /// <summary>
+        /// Initialize a new transcript with the supplied `label`, which is used as a domain separator.
+        /// </summary>
+        /// <param name="label"></param>
         public Transcript(byte[] label)
         {
             _obj = new Strobe(MERLIN_PROTOCOL_LABEL, 128);
             AppendMessage(Encoding.UTF8.GetBytes("dom-sep"), label);
         }
 
+        /// <summary>
+        /// Clone the transcript instance
+        /// </summary>
+        /// <returns></returns>
         public Transcript Clone()
         {
             return new Transcript((Strobe)_obj.Clone());
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         private byte[] EncodeU64(byte[] data)
         {
             byte[] result;
@@ -134,21 +192,61 @@ namespace Substrate.NET.Schnorrkel.Merlin
             return obj;
         }
 
+        /// <summary>
+        /// Append a prover's `message` to the transcript.
+        ///
+        /// The `label` parameter is metadata about the message, and is
+        /// also appended to the transcript.  See the [Transcript
+        /// Protocols](https://merlin.cool/use/protocol.html) section of
+        /// the Merlin website for details on labels.
+        /// </summary>
+        /// <param name="label"></param>
+        /// <param name="message"></param>
         public void AppendMessage(string label, string message)
         {
             AppendMessage(Encoding.UTF8.GetBytes(label), Encoding.UTF8.GetBytes(message));
         }
 
+        /// <summary>
+        /// Append a prover's `message` to the transcript.
+        ///
+        /// The `label` parameter is metadata about the message, and is
+        /// also appended to the transcript.  See the [Transcript
+        /// Protocols](https://merlin.cool/use/protocol.html) section of
+        /// the Merlin website for details on labels.
+        /// </summary>
+        /// <param name="label"></param>
+        /// <param name="message"></param>
         public void AppendMessage(string label, byte[] message)
         {
             AppendMessage(Encoding.UTF8.GetBytes(label), message);
         }
 
+        /// <summary>
+        /// Append a prover's `message` to the transcript.
+        ///
+        /// The `label` parameter is metadata about the message, and is
+        /// also appended to the transcript.  See the [Transcript
+        /// Protocols](https://merlin.cool/use/protocol.html) section of
+        /// the Merlin website for details on labels.
+        /// </summary>
+        /// <param name="label"></param>
+        /// <param name="message"></param>
         public void AppendMessage(byte[] label, string message)
         {
             AppendMessage(label, Encoding.UTF8.GetBytes(message));
         }
 
+        /// <summary>
+        /// Append a prover's `message` to the transcript.
+        ///
+        /// The `label` parameter is metadata about the message, and is
+        /// also appended to the transcript.  See the [Transcript
+        /// Protocols](https://merlin.cool/use/protocol.html) section of
+        /// the Merlin website for details on labels.
+        /// </summary>
+        /// <param name="label"></param>
+        /// <param name="message"></param>
         public void AppendMessage(byte[] label, byte[] message)
         {
             // var dataLength = message.Length;
@@ -158,33 +256,86 @@ namespace Substrate.NET.Schnorrkel.Merlin
             Ad(message, false);
         }
 
+        /// <summary>
+        /// This function was renamed to
+        /// [`append_message`](Transcript::append_message).
+        ///
+        /// This is intended to avoid any possible confusion between the
+        /// transcript-level messages and protocol-level commitments.
+        /// </summary>
+        /// <param name="label"></param>
+        /// <param name="message"></param>
+        [Obsolete("Rename to AppendMessage")]
         public void CommitBytes(byte[] label, byte[] message)
         {
             AppendMessage(label, message);
         }
 
+        /// <summary>
+        /// Convenience method for appending a `u64` to the transcript.
+        ///
+        /// The `label` parameter is metadata about the message, and is
+        /// also appended to the transcript.  See the [Transcript
+        /// Protocols](https://merlin.cool/use/protocol.html) section of
+        /// the Merlin website for details on labels.
+        /// </summary>
+        /// <param name="label"></param>
+        /// <param name="message"></param>
         public void AppendU64(byte[] label, byte[] message)
         {
             AppendMessage(label, EncodeU64(message));
         }
 
+        /// <summary>
+        /// This function was renamed to
+        /// [`append_u64`](Transcript::append_u64).
+        ///
+        /// This is intended to avoid any possible confusion between the
+        /// transcript-level messages and protocol-level commitments.
+        /// </summary>
+        /// <param name="label"></param>
+        /// <param name="message"></param>
+        [Obsolete("Rename to AppendU64")]
         public void CommitU64(byte[] label, byte[] message)
         {
             AppendU64(label, message);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="nonceSeeds"></param>
+        /// <param name="rng"></param>
         public void WitnessBytes(ref byte[] dest, byte[] nonceSeeds, RandomGenerator rng)
         {
             byte[][] ns = new byte[][] { nonceSeeds };
             WitnessBytesRng(ref dest, ns, rng);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="label"></param>
+        /// <param name="dest"></param>
+        /// <param name="nonceSeeds"></param>
+        /// <param name="rng"></param>
         public void WitnessBytes(byte[] label, ref byte[] dest, byte[] nonceSeeds, RandomGenerator rng)
         {
             byte[][] ns = new byte[][] { nonceSeeds };
             WitnessBytesRng(label, ref dest, ns, rng);
         }
 
+        /// <summary>
+        /// Fill the supplied buffer with the verifier's challenge bytes.
+        ///
+        /// The `label` parameter is metadata about the challenge, and is
+        /// also appended to the transcript.  See the [Transcript
+        /// Protocols](https://merlin.cool/use/protocol.html) section of
+        /// the Merlin website for details on labels.
+        /// </summary>
+        /// <param name="label"></param>
+        /// <param name="buffer"></param>
         public void ChallengeBytes(byte[] label, ref byte[] buffer)
         {
             MetaAd(label, false);
@@ -193,6 +344,11 @@ namespace Substrate.NET.Schnorrkel.Merlin
             buffer = Prf(buffer.Length, false);
         }
 
+        /// <summary>
+        /// Fork the current [`Transcript`] to construct an RNG whose output is bound
+        /// to the current transcript state as well as prover's secrets.
+        /// </summary>
+        /// <returns></returns>
         public TranscriptRngBuilder BuildRng()
         {
             return new TranscriptRngBuilder(Clone());
@@ -229,6 +385,9 @@ namespace Substrate.NET.Schnorrkel.Merlin
         }
     }
 
+    /// <summary>
+    /// Constructs a [`TranscriptRng`] by rekeying the [`Transcript`] with prover secrets and an external RNG.
+    /// </summary>
     internal class TranscriptRngBuilder
     {
         public Transcript _strobe { get; private set; }
@@ -238,6 +397,14 @@ namespace Substrate.NET.Schnorrkel.Merlin
             _strobe = strobe;
         }
 
+        /// <summary>
+        /// Rekey the transcript using the provided witness data.
+        ///
+        /// The `label` parameter is metadata about `witness`.
+        /// </summary>
+        /// <param name="label"></param>
+        /// <param name="witness"></param>
+        /// <returns></returns>
         public TranscriptRngBuilder RekeyWithWitnessBytes(byte[] label, byte[] witness)
         {
             _strobe.MetaAd(label, false);
@@ -247,6 +414,14 @@ namespace Substrate.NET.Schnorrkel.Merlin
             return this;
         }
 
+        /// <summary>
+        /// Use the supplied external `rng` to rekey the transcript, so
+        /// that the finalized [`TranscriptRng`] is a PRF bound to
+        /// randomness from the external RNG, as well as all other
+        /// transcript data.
+        /// </summary>
+        /// <param name="rng"></param>
+        /// <returns></returns>
         public TranscriptRng Finalize(RandomGenerator rng)
         {
             var bytes = new byte[32];
@@ -260,11 +435,22 @@ namespace Substrate.NET.Schnorrkel.Merlin
         }
     }
 
+    /// <summary>
+    /// Abstract class for implementing random byte generator
+    /// </summary>
     public abstract class RandomGenerator
     {
+        /// <summary>
+        /// Generate bytes
+        /// </summary>
+        /// <param name="dst"></param>
         public abstract void FillBytes(ref byte[] dst);
     }
 
+    /// <summary>
+    /// Constructs a [`TranscriptRng`] by rekeying the [`Transcript`] with
+    /// prover secrets and an external RNG.
+    /// </summary>
     internal class TranscriptRng : RandomGenerator
     {
         private static Random _rnd;
@@ -272,6 +458,10 @@ namespace Substrate.NET.Schnorrkel.Merlin
         private byte[] _strobeBytes;
         private int _pointer;
 
+        /// <summary>
+        /// Instanciate a new TranscriptRng
+        /// </summary>
+        /// <param name="strobe"></param>
         public TranscriptRng(Transcript strobe)
         {
             if (_rnd == null)
@@ -284,6 +474,10 @@ namespace Substrate.NET.Schnorrkel.Merlin
             _pointer = 0;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dst"></param>
         public override void FillBytes(ref byte[] dst)
         {
             _strobe.MetaAd(BitConverter.GetBytes(dst.Length), false);

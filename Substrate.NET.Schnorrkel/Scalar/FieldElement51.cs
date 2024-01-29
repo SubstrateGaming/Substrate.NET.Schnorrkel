@@ -31,6 +31,9 @@ namespace Substrate.NET.Schnorrkel.Scalars
     /// </summary>
     public class FieldElement51
     {
+        /// <summary>
+        /// Inner data
+        /// </summary>
         public ulong[] _data = { 0, 0, 0, 0, 0 };
 
         /// <summary>
@@ -357,7 +360,7 @@ namespace Substrate.NET.Schnorrkel.Scalars
         /// <returns></returns>
         public FieldElement51 Pow2k(int k)
         {
-            /// Multiply two 64-bit integers with 128 bits of output.
+            // Multiply two 64-bit integers with 128 bits of output.
             var m = new Func<BigInteger, BigInteger, BigInteger>((x, y) =>
             { return x * y; });
 
@@ -704,6 +707,10 @@ namespace Substrate.NET.Schnorrkel.Scalars
             };
         }
 
+        /// <summary>
+        /// /// Serialize this `FieldElement51` to a 32-byte array. The encoding is canonical.
+        /// </summary>
+        /// <returns></returns>
         public byte[] ToBytes()
         {
             // Let h = limbs[0] + limbs[1]*2^51 + ... + limbs[4]*2^204.
@@ -791,6 +798,10 @@ namespace Substrate.NET.Schnorrkel.Scalars
             return s;
         }
 
+        /// <summary>
+        /// Invert the sign of this field element
+        /// </summary>
+        /// <returns></returns>
         public FieldElement51 Invert()
         {
             var pow22501 = new Func<FieldElement51, (FieldElement51, FieldElement51)>(fe =>

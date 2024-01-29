@@ -62,6 +62,11 @@ namespace Substrate.NET.Schnorrkel.Ristretto
             XY2d.ConditionalAssign(a.XY2d, choice);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a"></param>
+        /// <returns></returns>
         public AffineNielsPoint BitXor(AffineNielsPoint a)
         {
             return new AffineNielsPoint
@@ -72,12 +77,20 @@ namespace Substrate.NET.Schnorrkel.Ristretto
             };
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="choice"></param>
         public void ConditionalNegate(bool choice)
         {
             var nself = Negate();
             ConditionalAssign(nself, choice);
         }
 
+        /// <summary>
+        /// Invert the sign of this field element
+        /// </summary>
+        /// <returns></returns>
         private AffineNielsPoint Negate()
         {
             return new AffineNielsPoint

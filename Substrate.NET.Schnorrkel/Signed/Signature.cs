@@ -54,6 +54,10 @@ namespace Substrate.NET.Schnorrkel.Signed
         /// </summary>
         public Scalar S { get; set; }
 
+        /// <summary>
+        /// Construct a `Signature` from a slice of bytes.
+        /// </summary>
+        /// <param name="signatureBytes"></param>
         public void FromBytes011(byte[] signatureBytes)
         {
             var r = new CompressedRistretto(signatureBytes.AsMemory(0, 32).ToArray());
@@ -66,6 +70,10 @@ namespace Substrate.NET.Schnorrkel.Signed
             S = s;
         }
 
+        /// <summary>
+        /// Convert this `Signature` to a byte array.
+        /// </summary>
+        /// <returns></returns>
         public byte[] ToBytes011()
         {
             var bytes = new byte[Consts.SIGNATURE_LENGTH];
@@ -115,7 +123,7 @@ namespace Substrate.NET.Schnorrkel.Signed
         }
 
         /// <summary>
-        /// Convert this `Signature` to a byte array.
+        /// Convert this `Signature` to a byte array with Schnorrkel signature mark
         /// </summary>
         /// <returns></returns>
         public byte[] ToBytes()
