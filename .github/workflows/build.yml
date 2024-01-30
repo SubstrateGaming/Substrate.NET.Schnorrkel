@@ -40,8 +40,8 @@ jobs:
       - name: Install dependencies
         run: dotnet restore
 
-      - name: Build test project
-        run: dotnet build .\Substrate.NET.Schnorrkel.Test
-
+      # Test
       - name: Test
-        run: dotnet test
+        run: |
+            cd Substrate.NET.Schnorrkel.Test
+            dotnet test --no-restore --verbosity normal
