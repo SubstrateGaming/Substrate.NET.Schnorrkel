@@ -20,13 +20,44 @@ using Substrate.NET.Schnorrkel.Scalars;
 
 namespace Substrate.NET.Schnorrkel.Ristretto
 {
+    /// <summary>
+    /// A `CompletedPoint` is a point \\(((X:Z), (Y:T))\\) on the \\(\mathbb
+    /// P\^1 \times \mathbb P\^1 \\) model of the curve.
+    /// A point (x,y) in the affine model corresponds to \\( ((x:1),(y:1))
+    /// \\).
+    ///
+    /// More details on the relationships between the different curve models
+    /// can be found in the module-level documentation.
+    /// </summary>
     public class CompletedPoint
     {
+        /// <summary>
+        /// X field
+        /// </summary>
         public FieldElement51 X { get; set; }
+
+        /// <summary>
+        /// Y field
+        /// </summary>
         public FieldElement51 Y { get; set; }
+
+        /// <summary>
+        /// Z field
+        /// </summary>
         public FieldElement51 Z { get; set; }
+
+        /// <summary>
+        /// T field
+        /// </summary>
         public FieldElement51 T { get; set; }
 
+        /// <summary>
+        /// Convert this point from the \\( \mathbb P\^1 \times \mathbb P\^1
+        /// \\) model to the \\( \mathbb P\^2 \\) model.
+        ///
+        /// This costs \\(3 \mathrm M \\).
+        /// </summary>
+        /// <returns></returns>
         public ProjectivePoint ToProjective()
         {
             return new ProjectivePoint
@@ -37,6 +68,13 @@ namespace Substrate.NET.Schnorrkel.Ristretto
             };
         }
 
+        /// <summary>
+        /// Convert this point from the \\( \mathbb P\^1 \times \mathbb P\^1
+        /// \\) model to the \\( \mathbb P\^3 \\) model.
+        ///
+        /// This costs \\(4 \mathrm M \\).
+        /// </summary>
+        /// <returns></returns>
         public EdwardsPoint ToExtended()
         {
             return new EdwardsPoint

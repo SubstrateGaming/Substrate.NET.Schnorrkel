@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
+using Substrate.NET.Schnorrkel.Exceptions;
 using Substrate.NET.Schnorrkel.Keys;
 using Substrate.NET.Schnorrkel.Merlin;
 using Substrate.NET.Schnorrkel.Ristretto;
@@ -24,6 +25,21 @@ using System;
 
 namespace Substrate.NET.Schnorrkel
 {
+    /// <summary>
+    /// A secret key for use with Ristretto Schnorr signatures.
+    ///
+    /// Internally, these consist of a scalar mod l along with a seed for
+    /// nonce generation.  In this way, we ensure all scalar arithmatic
+    /// works smoothly in operations like threshold or multi-signatures,
+    /// or hierarchical deterministic key derivations.
+    ///
+    /// We keep our secret key serializaion "almost" compatable with EdDSA
+    /// "expanded" secret key serializaion by multiplying the scalar by the
+    /// cofactor 8, as integers, and dividing on deserializaion.
+    /// We do not however attempt to keep the scalar's high bit set, especially
+    /// not during hierarchical deterministic key derivations, so some Ed25519
+    /// libraries might compute the public key incorrectly from our secret key.
+    /// </summary>
     public struct SecretKey
     {
         /// Actual public key represented as a scalar.
@@ -35,6 +51,14 @@ namespace Substrate.NET.Schnorrkel
         /// Any modificaiton here may dirupt some non-public key derivation techniques.
         public byte[] nonce; //[u8; 32],
 
+        /// <summary>
+        /// Convert this `SecretKey` into an array of 64 bytes with.
+        ///
+        /// Returns an array of 64 bytes, with the first 32 bytes being
+        /// the secret scalar represented cannonically, and the last
+        /// 32 bytes being the seed for nonces.
+        /// </summary>
+        /// <returns></returns>
         public byte[] ToBytes()
         {
             var result = new byte[64];
@@ -43,6 +67,10 @@ namespace Substrate.NET.Schnorrkel
             return result;
         }
 
+        /// <summary>
+        /// Derive the `PublicKey` corresponding to this `MiniSecretKey`.
+        /// </summary>
+        /// <returns></returns>
         public PublicKey ExpandToPublic()
         {
             var tbl = new RistrettoBasepointTable();
@@ -51,12 +79,17 @@ namespace Substrate.NET.Schnorrkel
             return new PublicKey(R.ToBytes());
         }
 
+        /// <summary>
+        /// Construct an `SecretKey` from a slice of bytes.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public static SecretKey FromBytes085(byte[] data)
         {
             if (data.Length != Consts.SIGNATURE_LENGTH)
-                throw new Exception("SecretKey - SignatureError::BytesLengthError");
+                throw new SignatureException("SecretKey - SignatureError::BytesLengthError");
 
-            // var key = data.AsMemory().Slice(0, 32).ToArray();
             return new SecretKey
             {
                 key = new Scalar { ScalarBytes = data.AsMemory().Slice(0, 32).ToArray() },
@@ -64,27 +97,39 @@ namespace Substrate.NET.Schnorrkel
             };
         }
 
+        /// <summary>
+        /// Construct an `SecretKey` from a slice of bytes, corresponding to an Ed25519 expanded secret key.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public static SecretKey FromBytes011(byte[] data)
         {
             if (data.Length != Consts.SIGNATURE_LENGTH)
-                throw new Exception("SecretKey - SignatureError::BytesLengthError");
+                throw new ArgumentException("SecretKey - SignatureError::BytesLengthError");
 
             // TODO:  We should consider making sure the scalar is valid,
             // maybe by zering the high bit, orp referably by checking < l.
             // key[31] &= 0b0111_1111;
             // We devide by the cofactor to internally keep a clean
             // representation mod l.
-            var key = data.AsMemory().Slice(0, 32).ToArray();
-            Scalar.DivideScalarBytesByCofactor(ref key);//::divide_scalar_bytes_by_cofactor(&mut key);
+            var dataSlice = data.AsMemory().Slice(0, 32).ToArray();
+            Scalar.DivideScalarBytesByCofactor(ref dataSlice);//::divide_scalar_bytes_by_cofactor(&mut key);
 
             return new SecretKey
             {
-                key = new Scalar { ScalarBytes = key },
+                key = new Scalar { ScalarBytes = dataSlice },
                 nonce = data.AsMemory().Slice(32, 32).ToArray()
             };
         }
 
         /// <summary>
+        /// Convert this `SecretKey` into an array of 64 bytes, corresponding to
+        /// an Ed25519 expanded secret key.
+        ///
+        /// Returns an array of 64 bytes, with the first 32 bytes being
+        /// the secret scalar shifted ed25519 style, and the last 32 bytes
+        /// being the seed for nonces.
         /// https://github.com/w3f/schnorrkel/blob/master/src/keys.rs#L488
         /// </summary>
         /// <returns></returns>
@@ -104,14 +149,29 @@ namespace Substrate.NET.Schnorrkel
         }
 
         /// <summary>
+        /// Construct an `SecretKey` from a slice of bytes, corresponding to an Ed25519 expanded secret key.
         /// https://github.com/w3f/schnorrkel/blob/master/src/keys.rs#L523
         /// This is exactly the same implementation as FromBytes011, but I prefer to add a new method to keep name consistency
         /// </summary>
-        /// <param name="bytes"></param>
+        /// <param name="data"></param>
         /// <returns></returns>
         internal static SecretKey FromEd25519Bytes(byte[] data) => FromBytes011(data);
 
         /// <summary>
+        /// Vaguely BIP32-like "hard" derivation of a `MiniSecretKey` from a `SecretKey`
+        ///
+        /// We do not envision any "good reasons" why these "hard"
+        /// derivations should ever be used after the soft `Derivation`
+        /// trait.  We similarly do not believe hard derivations
+        /// make any sense for `ChainCode`s or `ExtendedKey`s types.
+        /// Yet, some existing BIP32 workflows might do these things,
+        /// due to BIP32's de facto stnadardization and poor design.
+        /// In consequence, we provide this method to do "hard" derivations
+        /// in a way that should work with all BIP32 workflows and any
+        /// permissible mutations of `SecretKey`.  This means only that
+        /// we hash the `SecretKey`'s scalar, but not its nonce becuase
+        /// the secret key remains valid if the nonce is changed.
+        /// 
         /// https://github.com/w3f/schnorrkel/blob/master/src/derive.rs#L118
         /// </summary>
         /// <param name="chainCode"></param>

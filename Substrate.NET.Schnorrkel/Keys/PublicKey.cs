@@ -22,10 +22,27 @@ using Substrate.NET.Schnorrkel.Scalars;
 
 namespace Substrate.NET.Schnorrkel
 {
+    /// <summary>
+    /// A Ristretto Schnorr public key.
+    ///
+    /// Internally, these are represented as a `RistrettoPoint`, meaning
+    /// an Edwards point with a static guarantee to be 2-torsion free.
+    ///
+    /// At present, we decompress `PublicKey`s into this representation
+    /// during deserialization, which improves error handling, but costs
+    /// a compression during signing and verifiaction.
+    /// </summary>
     public class PublicKey
     {
+        /// <summary>
+        /// The public key
+        /// </summary>
         public byte[] Key { get; }
 
+        /// <summary>
+        /// Create a new public key from byte array
+        /// </summary>
+        /// <param name="keyBytes"></param>
         public PublicKey(byte[] keyBytes)
         {
             Key = keyBytes;

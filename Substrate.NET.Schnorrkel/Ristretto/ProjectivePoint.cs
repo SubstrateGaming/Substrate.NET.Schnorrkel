@@ -20,12 +20,36 @@ using Substrate.NET.Schnorrkel.Scalars;
 
 namespace Substrate.NET.Schnorrkel.Ristretto
 {
+    /// <summary>
+    /// A `ProjectivePoint` is a point \\((X:Y:Z)\\) on the \\(\mathbb
+    /// P\^2\\) model of the curve.
+    /// A point \\((x,y)\\) in the affine model corresponds to
+    /// \\((x:y:1)\\).
+    ///
+    /// More details on the relationships between the different curve models
+    /// can be found in the module-level documentation.
+    /// </summary>
     public class ProjectivePoint
     {
+        /// <summary>
+        /// X field
+        /// </summary>
         public FieldElement51 X { get; set; }
+
+        /// <summary>
+        /// Y field
+        /// </summary>
         public FieldElement51 Y { get; set; }
+
+        /// <summary>
+        /// Z field
+        /// </summary>
         public FieldElement51 Z { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public CompletedPoint Double()
         {
             var XX = X.Square();
@@ -45,6 +69,10 @@ namespace Substrate.NET.Schnorrkel.Ristretto
             };
         }
 
+        /// <summary>
+        /// Return identity
+        /// </summary>
+        /// <returns></returns>
         internal static ProjectivePoint Identity()
         {
             return new ProjectivePoint
@@ -55,6 +83,13 @@ namespace Substrate.NET.Schnorrkel.Ristretto
             };
         }
 
+        /// <summary>
+        /// Convert this point from the \\( \mathbb P\^2 \\) model to the
+        /// \\( \mathbb P\^3 \\) model.
+        ///
+        /// This costs \\(3 \mathrm M + 1 \mathrm S\\).
+        /// </summary>
+        /// <returns></returns>
         internal EdwardsPoint ToExtended()
         {
             return new EdwardsPoint

@@ -21,13 +21,29 @@ using System;
 
 namespace Substrate.NET.Schnorrkel.Ristretto
 {
+    /// <summary>
+    /// An `EdwardsPoint` represents a point on the Edwards form of Curve25519.
+    /// </summary>
     public class EdwardsPoint
     {
+        /// <summary>
+        /// Internal EdwardsPoint elements
+        /// </summary>
         public FieldElement51 X, Y, Z, T;
 
+        /// <summary>
+        /// Instanciate a new EdwardsPoint
+        /// </summary>
         public EdwardsPoint()
         { }
 
+        /// <summary>
+        /// Instanciate a new EdwardsPoint with predefined elements
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        /// <param name="t"></param>
         public EdwardsPoint(FieldElement51 x, FieldElement51 y, FieldElement51 z, FieldElement51 t)
         {
             X = x;
@@ -36,6 +52,11 @@ namespace Substrate.NET.Schnorrkel.Ristretto
             T = t;
         }
 
+        /// <summary>
+        /// Compare two EdwardsPoint
+        /// </summary>
+        /// <param name="a"></param>
+        /// <returns></returns>
         public bool Equals(EdwardsPoint a)
         {
             bool result = true;
@@ -50,6 +71,10 @@ namespace Substrate.NET.Schnorrkel.Ristretto
             return result;
         }
 
+        /// <summary>
+        /// Clone / Copy an EdwardsPoint
+        /// </summary>
+        /// <returns></returns>
         public EdwardsPoint Copy()
         {
             return new EdwardsPoint
@@ -61,6 +86,11 @@ namespace Substrate.NET.Schnorrkel.Ristretto
             };
         }
 
+        /// <summary>
+        /// Attempt to decompress to an `EdwardsPoint`.
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
         internal static EdwardsPoint Decompress(byte[] bytes)
         {
             var invsqrt =
@@ -101,6 +131,7 @@ namespace Substrate.NET.Schnorrkel.Ristretto
             return new EdwardsPoint(x, y, one, t);
         }
 
+
         internal static EdwardsPoint Double(EdwardsPoint point)
         {
             return point.ToProjective().Double().ToExtended();
@@ -121,16 +152,28 @@ namespace Substrate.NET.Schnorrkel.Ristretto
             return s.Double().ToExtended();
         }
 
+        /// <summary>
+        /// Construct zero.
+        /// </summary>
+        /// <returns></returns>
         public static FieldElement51 Zero()
         {
             return new FieldElement51 { _data = new ulong[] { 0, 0, 0, 0, 0 } };
         }
 
+        /// <summary>
+        /// Construct one.
+        /// </summary>
+        /// <returns></returns>
         public static FieldElement51 One()
         {
             return new FieldElement51 { _data = new ulong[] { 1, 0, 0, 0, 0 } };
         }
 
+        /// <summary>
+        /// Return EdwardsPoint identity
+        /// </summary>
+        /// <returns></returns>
         public static EdwardsPoint Identity()
         {
             return new EdwardsPoint
@@ -142,6 +185,10 @@ namespace Substrate.NET.Schnorrkel.Ristretto
             };
         }
 
+        /// <summary>
+        /// Get the negative of an EdwardsPoint
+        /// </summary>
+        /// <returns></returns>
         internal EdwardsPoint Negate()
         {
             return new EdwardsPoint
@@ -164,6 +211,11 @@ namespace Substrate.NET.Schnorrkel.Ristretto
             };
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public CompletedPoint Add(ProjectiveNielsPoint other)
         {
             var Y_plus_X = Y.Add(X);
@@ -183,6 +235,11 @@ namespace Substrate.NET.Schnorrkel.Ristretto
             };
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public CompletedPoint Sub(AffineNielsPoint other)
         {
             var Y_plus_X = Y.Add(X);
@@ -201,6 +258,11 @@ namespace Substrate.NET.Schnorrkel.Ristretto
             };
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public CompletedPoint Sub(ProjectiveNielsPoint other)
         {
             var Y_plus_X = Y.Add(X);
@@ -220,6 +282,11 @@ namespace Substrate.NET.Schnorrkel.Ristretto
             };
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public CompletedPoint Add(AffineNielsPoint other)
         {
             var Y_plus_X = Y.Add(X);
@@ -238,11 +305,20 @@ namespace Substrate.NET.Schnorrkel.Ristretto
             };
         }
 
+        /// <summary>
+        /// Addition of two EdwardsPoint
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public EdwardsPoint Add(EdwardsPoint other)
         {
             return Add(other.ToProjectiveNiels()).ToExtended();
         }
 
+        /// <summary>
+        /// Convert to a ProjectiveNielsPoint
+        /// </summary>
+        /// <returns></returns>
         public ProjectiveNielsPoint ToProjectiveNiels()
         {
             return new ProjectiveNielsPoint
@@ -254,6 +330,10 @@ namespace Substrate.NET.Schnorrkel.Ristretto
             };
         }
 
+        /// <summary>
+        /// Convert the representation of this point from extended coordinates to projective coordinates.
+        /// </summary>
+        /// <returns></returns>
         public ProjectivePoint ToProjective()
         {
             return new ProjectivePoint
@@ -264,6 +344,10 @@ namespace Substrate.NET.Schnorrkel.Ristretto
             };
         }
 
+        /// <summary>
+        /// Dehomogenize to a AffineNielsPoint.
+        /// </summary>
+        /// <returns></returns>
         public AffineNielsPoint ToAffineNiels()
         {
             var recip = Z.Invert();

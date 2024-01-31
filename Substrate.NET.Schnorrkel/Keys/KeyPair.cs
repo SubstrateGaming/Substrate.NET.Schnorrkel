@@ -23,11 +23,26 @@ using System.Text;
 
 namespace Substrate.NET.Schnorrkel.Keys
 {
+    /// <summary>
+    /// A Ristretto Schnorr keypair.
+    /// </summary>
     public class KeyPair
     {
+        /// <summary>
+        /// The public half of this keypair.
+        /// </summary>
         public PublicKey Public { get; set; }
+
+        /// <summary>
+        /// The secret half of this keypair.
+        /// </summary>
         public SecretKey Secret { get; set; }
 
+        /// <summary>
+        /// Create a new KeyPair
+        /// </summary>
+        /// <param name="publicKey"></param>
+        /// <param name="secretKey"></param>
         public KeyPair(PublicKey publicKey, SecretKey secretKey)
         {
             this.Public = publicKey;
@@ -35,9 +50,14 @@ namespace Substrate.NET.Schnorrkel.Keys
         }
 
         /// <summary>
+        /// Serialize `Keypair` to bytes with Ed25519 secret key format.
         /// https://github.com/w3f/schnorrkel/blob/master/src/keys.rs#L823
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// A byte array `[u8; KEYPAIR_LENGTH]` consisting of first a
+        /// `SecretKey` serialized like Ed25519, and next the Ristterro
+        /// `PublicKey`
+        /// </returns>
         public byte[] ToHalfEd25519Bytes()
         {
             byte[] bytes = new byte[96];
@@ -52,10 +72,11 @@ namespace Substrate.NET.Schnorrkel.Keys
         }
 
         /// <summary>
+        /// Deserialize a `Keypair` from bytes with Ed25519 style `SecretKey` format.
         /// https://github.com/w3f/schnorrkel/blob/master/src/keys.rs#L853
         /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
+        /// <param name="data">representing the scalar for the secret key, and a compressed Ristretto point, both as bytes.</param>
+        /// <returns>A `Result` whose okay value is an EdDSA `Keypair` or whose error value is an `SignatureError` describing the error that occurred.</returns>
         /// <exception cref="ArgumentException"></exception>
         public static KeyPair FromHalfEd25519Bytes(byte[] data)
         {
@@ -74,6 +95,8 @@ namespace Substrate.NET.Schnorrkel.Keys
         }
 
         /// <summary>
+        /// Derive key with subkey identified by a byte array and a chain code
+        /// Derive a secret key and new chain code from a key pair and chain code.
         /// https://github.com/w3f/schnorrkel/blob/master/src/derive.rs#L63 + https://github.com/w3f/schnorrkel/blob/master/src/derive.rs#L181
         /// </summary>
         /// <param name="chainCode"></param>
