@@ -25,12 +25,28 @@ using System.Text;
 
 namespace Substrate.NET.Schnorrkel
 {
+    /// <summary>
+    /// A Ristretto Schnorr signature "detached" from the signed message.
+    ///
+    /// These cannot be converted to any Ed25519 signature because they hash
+    /// curve points in the Ristretto encoding.
+    /// </summary>
     public class Sr25519v091 : Sr25519Base
     {
+        /// <summary>
+        /// Create a new Sr25519v091 instance
+        /// </summary>
+        /// <param name="settings"></param>
         public Sr25519v091(SchnorrkelSettings settings) : base(settings)
         {
         }
 
+        /// <summary>
+        /// Sign from KeyPair
+        /// </summary>
+        /// <param name="pair"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public static byte[] SignSimple(KeyPair pair, byte[] message)
         {
             var signingContext = new SigningContext085(Encoding.UTF8.GetBytes("substrate"));
@@ -42,6 +58,13 @@ namespace Substrate.NET.Schnorrkel
             return sig.ToBytes();
         }
 
+        /// <summary>
+        /// Sign from Secret Key from byte slice
+        /// </summary>
+        /// <param name="publicKey"></param>
+        /// <param name="secretKey"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public static byte[] SignSimple(byte[] publicKey, byte[] secretKey, byte[] message)
         {
             var sk = SecretKey.FromBytes085(secretKey);
@@ -55,17 +78,24 @@ namespace Substrate.NET.Schnorrkel
             return sig.ToBytes();
         }
 
-        public static byte[] SignEd25519(byte[] publicKey, byte[] secretKey, byte[] message)
+        /// <summary>
+        /// Sign from Secret key from Ed25519 bytes (need to DivideScalarBytesByCofactor)
+        /// </summary>
+        /// <param name="publicKey"></param>
+        /// <param name="secretKey"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public static byte[] SignSimpleFromEd25519(byte[] publicKey, byte[] secretKey, byte[] message)
         {
-            var sk = SecretKey.FromBytes011(secretKey);
+            var sk = SecretKey.FromEd25519Bytes(secretKey);
             var pk = new PublicKey(publicKey);
-            var signingContext = new SigningContext011(Encoding.UTF8.GetBytes("substrate"));
+            var signingContext = new SigningContext085(Encoding.UTF8.GetBytes("substrate"));
             var st = new SigningTranscript(signingContext);
             signingContext.ts = signingContext.Bytes(message);
             var rng = new Simple();
             var sig = Sign(st, sk, pk, rng);
 
-            return sig.ToBytes011();
+            return sig.ToBytes();
         }
 
         public static bool Verify(byte[] signature, PublicKey publicKey, byte[] message)
@@ -85,18 +115,6 @@ namespace Substrate.NET.Schnorrkel
             s.FromBytes(signature);
             var pk = new PublicKey(publicKey);
             var signingContext = new SigningContext085(Encoding.UTF8.GetBytes("substrate"));
-            var st = new SigningTranscript(signingContext);
-            signingContext.ts = signingContext.Bytes(message);
-
-            return Verify(st, s, pk);
-        }
-
-        public static bool VerifyEd25519(byte[] signature, byte[] publicKey, byte[] message)
-        {
-            var s = new Signature();
-            s.FromBytes011(signature);
-            var pk = new PublicKey(publicKey);
-            var signingContext = new SigningContext011(Encoding.UTF8.GetBytes("substrate"));
             var st = new SigningTranscript(signingContext);
             signingContext.ts = signingContext.Bytes(message);
 
