@@ -20,6 +20,7 @@ using Substrate.NET.Schnorrkel.Merlin;
 using Substrate.NET.Schnorrkel.Ristretto;
 using Substrate.NET.Schnorrkel.Scalars;
 using Substrate.NET.Schnorrkel.Signed;
+using System;
 using System.Text;
 
 namespace Substrate.NET.Schnorrkel
@@ -44,7 +45,8 @@ namespace Substrate.NET.Schnorrkel
         /// <param name="secretKey"></param>
         /// <param name="message"></param>
         /// <returns></returns>
-        public static byte[] SignSimple(byte[] publicKey, byte[] secretKey, byte[] message)
+        [Obsolete("Use SignSimpleFromEd25519 instead")]
+        internal static byte[] SignSimple(byte[] publicKey, byte[] secretKey, byte[] message)
         {
             var sk = SecretKey.FromBytes085(secretKey);
             var pk = new PublicKey(publicKey);
@@ -55,6 +57,26 @@ namespace Substrate.NET.Schnorrkel
             var rng = new Simple();
             // var rng = new Hardcoded();
 
+            var sig = Sign(st, sk, pk, rng);
+
+            return sig.ToBytes();
+        }
+
+        /// <summary>
+        /// Sign from Secret key from Ed25519 bytes (need to DivideScalarBytesByCofactor)
+        /// </summary>
+        /// <param name="publicKey"></param>
+        /// <param name="secretKey"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public static byte[] SignSimpleFromEd25519(byte[] publicKey, byte[] secretKey, byte[] message)
+        {
+            var sk = SecretKey.FromEd25519Bytes(secretKey);
+            var pk = new PublicKey(publicKey);
+            var signingContext = new SigningContext085(Encoding.UTF8.GetBytes("substrate"));
+            var st = new SigningTranscript(signingContext);
+            signingContext.ts = signingContext.Bytes(message);
+            var rng = new Simple();
             var sig = Sign(st, sk, pk, rng);
 
             return sig.ToBytes();
