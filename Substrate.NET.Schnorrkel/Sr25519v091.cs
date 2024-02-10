@@ -21,6 +21,7 @@ using Substrate.NET.Schnorrkel.Merlin;
 using Substrate.NET.Schnorrkel.Ristretto;
 using Substrate.NET.Schnorrkel.Scalars;
 using Substrate.NET.Schnorrkel.Signed;
+using System;
 using System.Text;
 
 namespace Substrate.NET.Schnorrkel
@@ -65,7 +66,8 @@ namespace Substrate.NET.Schnorrkel
         /// <param name="secretKey"></param>
         /// <param name="message"></param>
         /// <returns></returns>
-        public static byte[] SignSimple(byte[] publicKey, byte[] secretKey, byte[] message)
+        [Obsolete("Use SignSimpleFromEd25519 instead")]
+        internal static byte[] SignSimple(byte[] publicKey, byte[] secretKey, byte[] message)
         {
             var sk = SecretKey.FromBytes085(secretKey);
             var pk = new PublicKey(publicKey);
@@ -98,6 +100,13 @@ namespace Substrate.NET.Schnorrkel
             return sig.ToBytes();
         }
 
+        /// <summary>
+        /// Verify a signature
+        /// </summary>
+        /// <param name="signature"></param>
+        /// <param name="publicKey"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public static bool Verify(byte[] signature, PublicKey publicKey, byte[] message)
         {
             var s = new Signature();
@@ -109,6 +118,13 @@ namespace Substrate.NET.Schnorrkel
             return Verify(st, s, publicKey);
         }
 
+        /// <summary>
+        /// Verify a signature
+        /// </summary>
+        /// <param name="signature"></param>
+        /// <param name="publicKey"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public static bool Verify(byte[] signature, byte[] publicKey, byte[] message)
         {
             var s = new Signature();

@@ -59,7 +59,8 @@ namespace Substrate.NET.Schnorrkel
         /// 32 bytes being the seed for nonces.
         /// </summary>
         /// <returns></returns>
-        public byte[] ToBytes()
+        [Obsolete("Use ToEd25519Bytes instead")]
+        internal byte[] ToBytes()
         {
             var result = new byte[64];
             key.ScalarBytes.CopyTo(result, 0);
@@ -85,7 +86,8 @@ namespace Substrate.NET.Schnorrkel
         /// <param name="data"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static SecretKey FromBytes085(byte[] data)
+        [Obsolete("Use FromBytes011 instead")]
+        internal static SecretKey FromBytes085(byte[] data)
         {
             if (data.Length != Consts.SIGNATURE_LENGTH)
                 throw new SignatureException("SecretKey - SignatureError::BytesLengthError");
